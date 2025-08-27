@@ -1,0 +1,46 @@
+[OBS Video Thread Tick]
+        │
+        ▼
+┌───────────────────────────────────────────────┐
+│ CPU: shader_filter_tick                        │
+│   - Runs before any GPU work                   │
+│   - Updates UVs, timers, randoms               │
+│   - Resets render flags                        │
+│   - No GPU calls yet                           │
+│   (CPU-bound, negligible latency)              │
+└───────────────────────────────────────────────┘
+        │
+        ▼
+┌───────────────────────────────────────────────┐
+│ GPU: get_input_source                          │
+│   - Begin filter pass (obs_source_process_filter_begin_with_color_space)
+│   - Switch render target → input_texrender     │
+│   - Draw upstream frame                        │
+│   - End pass                                   │
+│   - Swap input_texrender ↔ previous_input_texrender
+│   (GPU-bound, ~0.1–0.3 ms typical)              │
+└───────────────────────────────────────────────┘
+        │
+        ▼
+┌───────────────────────────────────────────────┐
+│ GPU: render_shader                             │
+│   - Switch render target → output_texrender    │
+│   - Bind all shader params (textures, uniforms)│
+│   - Loop over effect passes (gs_effect_loop)   │
+│   - Draw sprite / custom verts                 │
+│   - Swap output_texrender ↔ previous_output_texrender
+│   (GPU-bound, cost depends on shader complexity)
+└───────────────────────────────────────────────┘
+        │
+        ▼
+┌───────────────────────────────────────────────┐
+│ GPU: draw_output                               │
+│   - Begin filter pass                          │
+│   - Bind output_texrender to output effect     │
+│   - Draw to OBS framebuffer                    │
+│   - End pass                                   │
+│   (GPU-bound, ~0.05–0.2 ms typical)             │
+└───────────────────────────────────────────────┘
+        │
+        ▼
+[Downstream OBS compositing + encoder]
