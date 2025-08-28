@@ -6,8 +6,8 @@ else()
   cmake_minimum_required(VERSION 3.18)
 endif()
 
-project(obs-shaderfilter VERSION 3.0.0)
-set(PROJECT_FULL_NAME "OBS Shaderfilter")
+project(shader_filter_extended VERSION 3.0.0)
+set(PROJECT_FULL_NAME "Shader Filter Extended")
 
 # Set new UUIDs when you start to create a new plugin.
 set(MACOS_PACKAGE_UUID "7DA301DD-35F4-44C3-BE34-B33528D487F5")
@@ -15,41 +15,70 @@ set(MACOS_INSTALLER_UUID "D1247630-89C0-498A-8A3B-B0752080DEC2")
 
 add_library(${PROJECT_NAME} MODULE)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/version.h)
+# Generate version.h from template
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
+               ${CMAKE_CURRENT_SOURCE_DIR}/version.h)
 
+# --- Updated target sources for split files ---
 target_sources(${PROJECT_NAME} PRIVATE
-	obs-shaderfilter.c
-	version.h)
-	
+    shader_filter.h
+    shader_filter.c
+    shader_filter_convert.h
+    shader_filter_convert.c
+    shader_filter_main.h
+    shader_filter_main.c
+    shader_filter_params.h
+    shader_filter_params.c
+    shader_filter_props.h
+    shader_filter_props.c
+    shader_filter_render.h
+    shader_filter_render.c
+    shader_filter_templates.h
+    shader_filter_templates.c
+    shader_filter_textures.h
+    shader_filter_textures.c
+    shader_filter_transition.h
+    shader_filter_transition.c
+    shader_filter_types.h
+    shader_filter_util.h
+    shader_filter_util.c
+    
+    version.h
+)
+
+
 if(BUILD_OUT_OF_TREE)
   find_package(libobs REQUIRED)
   include(cmake/ObsPluginHelpers.cmake)
 endif()
 
 if(OS_WINDOWS)
-	get_filename_component(ISS_FILES_DIR "${CMAKE_BINARY_DIR}\\..\\package" ABSOLUTE)
-	file(TO_NATIVE_PATH "${ISS_FILES_DIR}" ISS_FILES_DIR)
-	get_filename_component(ISS_PACKAGE_DIR "${CMAKE_PACKAGE_PREFIX}\\.." ABSOLUTE)
-	file(TO_NATIVE_PATH "${ISS_PACKAGE_DIR}" ISS_PACKAGE_DIR)
-	get_filename_component(ISS_SOURCE_DIR "${PROJECT_SOURCE_DIR}" ABSOLUTE)
-	file(TO_NATIVE_PATH "${ISS_SOURCE_DIR}" ISS_SOURCE_DIR)
-	configure_file("installer.iss.in"
-			"${PROJECT_BINARY_DIR}/installer.iss"
-		)
-	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resource.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.rc)
-	target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.rc)
-	
+    get_filename_component(ISS_FILES_DIR "${CMAKE_BINARY_DIR}\\..\\package" ABSOLUTE)
+    file(TO_NATIVE_PATH "${ISS_FILES_DIR}" ISS_FILES_DIR)
+    get_filename_component(ISS_PACKAGE_DIR "${CMAKE_PACKAGE_PREFIX}\\.." ABSOLUTE)
+    file(TO_NATIVE_PATH "${ISS_PACKAGE_DIR}" ISS_PACKAGE_DIR)
+    get_filename_component(ISS_SOURCE_DIR "${PROJECT_SOURCE_DIR}" ABSOLUTE)
+    file(TO_NATIVE_PATH "${ISS_SOURCE_DIR}" ISS_SOURCE_DIR)
+    configure_file("installer.iss.in"
+                   "${PROJECT_BINARY_DIR}/installer.iss")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resource.rc.in
+                   ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.rc)
+    target_sources(${PROJECT_NAME} PRIVATE
+                   ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.rc)
+
 elseif(OS_MACOS)
-	set(MACOS_BUNDLEID "com.exeldro.${PROJECT_NAME}")
-	set(MACOSX_PLUGIN_GUI_IDENTIFIER "${MACOS_BUNDLEID}")
-	set(MACOSX_PLUGIN_BUNDLE_VERSION "${PROJECT_VERSION}")
-	set(MACOSX_PLUGIN_SHORT_VERSION_STRING "1")
-	configure_file(cmake/bundle/macos/installer-macos.pkgproj.in ${CMAKE_BINARY_DIR}/installer-macos.generated.pkgproj)
-	target_compile_options(${PROJECT_NAME} PRIVATE -Wall)
+    set(MACOS_BUNDLEID "com.exeldro.${PROJECT_NAME}")
+    set(MACOSX_PLUGIN_GUI_IDENTIFIER "${MACOS_BUNDLEID}")
+    set(MACOSX_PLUGIN_BUNDLE_VERSION "${PROJECT_VERSION}")
+    set(MACOSX_PLUGIN_SHORT_VERSION_STRING "1")
+    configure_file(cmake/bundle/macos/installer-macos.pkgproj.in
+                   ${CMAKE_BINARY_DIR}/installer-macos.generated.pkgproj)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall)
 endif()
 
 target_link_libraries(${PROJECT_NAME}
-		OBS::libobs)
+    OBS::libobs
+)
 
 if(BUILD_OUT_OF_TREE)
     if(NOT LIB_OUT_DIR)
@@ -66,9 +95,11 @@ if(BUILD_OUT_OF_TREE)
     setup_plugin_target(${PROJECT_NAME})
 else()
     if(OBS_CMAKE_VERSION VERSION_GREATER_EQUAL 3.0.0)
-        set_target_properties_obs(${PROJECT_NAME} PROPERTIES FOLDER "plugins/Chooka" PREFIX "")
+        set_target_properties_obs(${PROJECT_NAME}
+            PROPERTIES FOLDER "plugins/Chooka" PREFIX "")
     else()
-        set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "plugins/Chooka")
+        set_target_properties(${PROJECT_NAME}
+            PROPERTIES FOLDER "plugins/Chooka")
         setup_plugin_target(${PROJECT_NAME})
     endif()
 endif()
