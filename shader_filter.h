@@ -1,0 +1,15 @@
+// Version 3.0 by Chooka https://github.com/Chooka/obs-shaderfilter.git
+// Version 2.0 by Exeldro https://github.com/exeldro/obs-shaderfilter
+// Version 1.21 by Charles Fettinger https://github.com/Oncorporation/obs-shaderfilter
+// original version by nleseul https://github.com/nleseul/obs-shaderfilter
+
+#pragma once
+
+#include <obs-module.h>
+
+extern struct obs_source_info shader_filter;
+extern struct obs_source_info shader_transition;
+
+bool obs_module_load(void);
+void obs_module_unload(void);
+void obs_module_post_load(void);
